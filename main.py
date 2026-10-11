@@ -32,7 +32,7 @@ class LivenessRequest(BaseModel):
     flash_reflection_delta: Optional[float] = Field(default=None, description="Độ biến thiên phản xạ quang học màn hình")
 
 class ExtractEmbeddingRequest(BaseModel):
-    image_base64: str = Field(..., description="Ảnh khuôn mặt để trích xuất vector 128D")
+    image_base64: str = Field(..., description="Ảnh khuôn mặt để trích xuất vector 512D ArcFace")
 
 class MatchFaceRequest(BaseModel):
     probe_embedding: List[float] = Field(..., description="Vector khuôn mặt cần xác thực")
@@ -49,10 +49,11 @@ def health_check():
     return {
         "status": "online",
         "service": "qlbs-biometric-ai-engine",
-        "version": "1.2.0-on-premise",
+        "version": "1.3.0-on-premise",
         "anti_spoof_engine": "ISO/IEC 30107 PAD Level 2",
-        "face_model": "ArcFace / MobileFaceNet 128D L2",
-        "execution_provider": "CPU-Optimized (ONNX/NumPy)",
+        "face_detector": "OpenCV YuNet (5-Point Landmark Affine)",
+        "face_model": "InsightFace MobileFaceNet ArcFace 512D L2",
+        "execution_provider": "CPU-Optimized (ONNX/OpenCV)",
     }
 
 @app.post("/api/ai/liveness-pad")
@@ -73,7 +74,7 @@ def check_liveness(req: LivenessRequest):
 @app.post("/api/ai/extract-embedding")
 def extract_embedding(req: ExtractEmbeddingRequest):
     """
-    Trích xuất vector đặc trưng khuôn mặt 128 chiều chuẩn hoá L2 Norm
+    Trích xuất vector đặc trưng khuôn mặt chuẩn hoá L2 Norm (ArcFace 512D)
     """
     res = face_encoder.extract_embedding_from_base64(req.image_base64)
     if not res["success"]:
@@ -85,10 +86,10 @@ def match_face(req: MatchFaceRequest):
     """
     So khớp độ tương đồng giữa 2 vector khuôn mặt (Cosine Similarity & Euclidean Distance)
     """
-    if len(req.probe_embedding) != 128 or len(req.enrolled_embedding) != 128:
+    if len(req.probe_embedding) != len(req.enrolled_embedding):
         raise HTTPException(
             status_code=400,
-            detail=f"Kích thước vector không hợp lệ (cần 128 chiều, nhận: {len(req.probe_embedding)} và {len(req.enrolled_embedding)})"
+            detail=f"Kích thước vector không đồng nhất ({len(req.probe_embedding)} vs {len(req.enrolled_embedding)})"
         )
     return face_encoder.compare_embeddings(req.probe_embedding, req.enrolled_embedding)
 
