@@ -49,8 +49,8 @@ def health_check():
     return {
         "status": "online",
         "service": "qlbs-biometric-ai-engine",
-        "version": "1.3.0-on-premise",
-        "anti_spoof_engine": "ISO/IEC 30107 PAD Level 2",
+        "version": "1.4.0-on-premise",
+        "anti_spoof_engine": "ISO/IEC 30107-3 PAD (MiniFASNet Dual-Scale Ensemble 2.7x & 4.0x)",
         "face_detector": "OpenCV YuNet (5-Point Landmark Affine)",
         "face_model": "InsightFace MobileFaceNet ArcFace 512D L2",
         "execution_provider": "CPU-Optimized (ONNX/OpenCV)",
