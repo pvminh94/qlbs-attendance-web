@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # QLBS On-Premise Biometric AI Engine — Container AI cho VPS 2
+  ai-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qlbs_biometric_ai_engine
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8001}:8001"
+    environment:
+      - PORT=8001
+      - WORKERS=${WORKERS:-2}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
