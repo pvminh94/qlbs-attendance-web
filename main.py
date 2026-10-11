@@ -138,6 +138,9 @@ def full_verify(req: FullVerifyRequest):
     }
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    print("[QLBS AI Engine] Khởi động dịch vụ AI On-Premise trên cổng 8001...")
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=False)
+    # Tự động tính số worker processes theo số nhân CPU để phục vụ đồng thời hàng chục bác sĩ
+    workers = max(2, min(4, os.cpu_count() or 2))
+    print(f"[QLBS AI Engine] Khởi động dịch vụ AI On-Premise trên cổng 8001 với {workers} workers đa tiến trình...")
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=False, workers=workers)
